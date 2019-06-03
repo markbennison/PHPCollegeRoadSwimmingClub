@@ -1,118 +1,136 @@
-<?php #register.php ?>
-<?php $page_title = 'Register'; ?>
-<?php include('includes/header.php'); ?>
-
 <?php
-if (isset($_POST['submitted'])) { // Handle the form.
+require_once($_SERVER['DOCUMENT_ROOT'] . '/private/initialise.php');
 
-	require_once ('includes/mysqli_connect.php');
-	
-	// Trim all the incoming data:
-    $fName=trim($_POST['firstName']);
-    $sName=trim($_POST['lastName']);
-    $email=trim($_POST['email']);
-    $pass1=trim($_POST['password1']);
-    $pass2=trim($_POST['password2']);
-        
-	//could use $trimmed = array_map('trim', $_POST);
-	
-	// Assume invalid values:
-	$fn = $ln = $e = $p = FALSE;
-	
-	// Check for a first name:
-	if (preg_match ('/^[A-Z \'.-]{2,20}$/i', $fName)) {
-		$fn = mysqli_real_escape_string ($conn, $fName);
-	} else {
-		echo '<p class="error">Please enter your first name!</p>';
-	}
-	
-	// Check for a last name:
-	if (preg_match ('/^[A-Z \'.-]{2,40}$/i',  $sName)) {
-		$ln = mysqli_real_escape_string ($conn,  $sName);
-	} else {
-		echo '<p class="error">Please enter your last name!</p>';
-	}
-	
-	// Check for an email address:
-	if (preg_match ('/^[\w.-]+@[\w.-]+\.[A-Za-z]{2,6}$/',  $email)) {
-		$e = mysqli_real_escape_string ($conn,  $email);
-	} else {
-		echo '<p class="error">Please enter a valid email address!</p>';
-	}
+if(is_post_request()) {
 
-	// Check for a password and match against the confirmed password:
-	if (preg_match ('/^\w{4,20}$/',  $pass1 )) {
-		if ($pass1 ==  $pass2) {
-			$p = mysqli_real_escape_string ($conn,  $pass1);
-            $p = password_hash ($p, PASSWORD_DEFAULT);
-		} else {
-			echo '<p class="error">Your password did not match the confirmed password!</p>';
-		}
-	} else {
-		echo '<p class="error">Please enter a valid password!</p>';
-	}
+  // Create record using post parameters
+  $args = $_POST['user'];
+  $user = new User($args);
+  $result = $user->save();
 
-	if ($fn && $ln && $e && $p) { // If everything's OK...
+  if($result === true) {
+    $new_id = $user->id;
+    $_SESSION['message'] = 'Thank you for registering.';
+    redirect_to(url_for('/index.php'));
+  } else {
+    // show errors
+  }
 
-		// Make sure the email address (db is set up so that email is unique) is available:
+} else {
+  // display the form
+  $user = new User;
+}
 
-        $sqlselect = "SELECT 'id' FROM user WHERE email='$e'";
-		$r = mysqli_query ($conn, $sqlselect) or trigger_error("Query: $sqlselect\n<br />MySQL Error: " . mysqli_error($conn));
-		
-		if (mysqli_num_rows($r) == 0) { // Available.
-		
-	
-                    // Add the user to the database:
-					//$q = "INSERT INTO usersdemo (email, pass, firstName, lastName, regDate) VALUES ('$e', '$p', '$fn', '$ln', NOW() )";
-					$sqlinsert = "INSERT INTO user (username, password, forename, surname, dateofbirth, email, telephone, address1, address2, city, postcode, roleid, registrationdate) VALUES ('$e', '$p', '$fn', '$ln', NULL, '$e', NULL, NULL, NULL, NULL, NULL, '1', NOW() )"; 
-                    $r = mysqli_query ($conn, $sqlinsert) or trigger_error("Query: $sqlinsert\n<br />MySQL Error: " /*. mysqli_error($conn)*/);
-
-                if (mysqli_affected_rows($conn) == 1) { // If it ran OK.
-
-                        // Finish the page:
-                        echo '<h3>Thank you for registering!</h3>';
-                        include ('includes/footer.html'); // Include the HTML footer.
-                        exit(); // Stop the page.
-
-                    } else { // If it did not run OK.
-                        echo '<p class="error">You could not be registered due to a system error. We apologize for any inconvenience.</p>';
-                    }
-			
-		} else { // The email address is not available.
-			echo '<p class="error">That email address has already been registered. If you have forgotten your password, use the link at right to have your password sent to you.</p>';
-		}
-
-	} else { // If one of the data tests failed.
-		echo '<p class="error">Please re-enter your passwords and try again.</p>';
-	}
-
-	mysqli_close($conn);
-
-} // End of the main Submit conditional.
 ?>
-	
+<?php $page_title = 'Register'; ?>
+<?php include(SHARED_PATH . '/header.php'); ?>
+
 <!-- ********** CONTENT AREA ********** -->
 <div class="row">
-	<div class="col">
-		<form action="register.php" method="post">
-			<fieldset>
-			
-			<p><b>First Name:</b> <input type="text" name="firstName" size="20" maxlength="20" value="<?php if (isset($fName)) echo $fName; ?>" /></p>
-			
-			<p><b>Last Name:</b> <input type="text" name="lastName" size="20" maxlength="40" value="<?php if (isset($sName)) echo $sName; ?>" /></p>
-			
-			<p><b>Email Address:</b> <input type="text" name="email" size="30" maxlength="80" value="<?php if (isset($email)) echo $email; ?>" /> </p>
-				
-			<p><b>Password:</b> <input type="password" name="password1" size="20" maxlength="20" /> <small>Use only letters, numbers, and the underscore. Must be between 4 and 20 characters long.</small></p>
-			
-			<p><b>Confirm Password:</b> <input type="password" name="password2" size="20" maxlength="20" /></p>
-			</fieldset>
-			
-			<div class="text-center"><input type="submit" name="submit" value="Register" /></div>
-			<input type="hidden" name="submitted" value="TRUE" />
-
-		</form>
-	</div>
+    <div class="col">
+        <h3>Personal Details</h3>
+    </div>
 </div>
 
-<?php include('includes/footer.php'); ?>
+<div class="row">
+  <div class="col">
+
+    <?php echo display_errors($user->errors); ?>
+
+    <form action="<?php echo url_for('/register.php'); ?>" method="post">
+
+    <table id="formview" class="table table-sm table-borderless">
+  <tr>
+      <th>ID</th>
+      <td><input type="text" name="user[id]" class="form-control" value="<?php echo h($user->id); ?>" disabled /></td>
+  </tr>
+  <tr>
+      <th>Username</th>
+      <td><input type="text" name="user[username]" class="form-control" value="<?php echo h($user->username); ?>" />
+      <small id="usernameHelp" class="form-text text-muted">Username must be between 8 and 255 characters, and unique to College Road Swimming Club</small></td>
+  </tr>
+  <tr>
+      <th>Password</th>
+      <td><input type="password" name="user[plain_password]" class="form-control" value="<?php echo h($user->plain_password); ?>" /></td>
+  </tr>
+  <tr>
+      <th>Confirm Password</th>
+      <td><input type="password" name="user[confirm_password]" class="form-control" value="<?php echo h($user->confirm_password); ?>" />
+        <small id="passwordHelp" class="form-text text-muted">Passwords must contain 8 or more characters and include:
+      <br /> 1 or more uppercase characters,
+      <br /> 1 or more lowercase, 
+      <br /> 1 or more numbers, and 
+      <br /> 1 or more special characters</small></td>
+  </tr>
+  <tr>
+      <th>Forename</th>
+      <td><input type="text" name="user[forename]" class="form-control" value="<?php echo h($user->forename); ?>" />
+      <small id="forenameHelp" class="form-text text-muted">Forename must be between 2 and 30 characters</small></td>
+  </tr>
+  <tr>
+      <th>Surname</th>
+      <td><input type="text" name="user[surname]" class="form-control" value="<?php echo h($user->surname); ?>" />
+      <small id="surnameHelp" class="form-text text-muted">Surname must be between 2 and 30 characters</small></td>
+  </tr>
+  <tr>
+      <th>Date of Birth</th>
+      <td><input type="text" name="user[dateofbirth]" class="form-control" value="<?php echo h($user->dateofbirth); ?>" />
+      <small id="emailHelp" class="form-text text-muted">Currently as yyyy-mm-dd.</small></td>
+  </tr>
+  <tr>
+      <th>Gender</th>
+      <td><select name="user[gender]" class="form-control">
+      <?php foreach(User::GENDER_OPTIONS as $gender) { ?>
+      <option value="<?php echo $gender; ?>" <?php if($user->gender == $gender) { echo 'selected'; } ?>><?php echo $gender; ?></option>
+    <?php } ?>
+    </select></td>
+  </tr>
+  <tr>
+      <th>Email</th>
+      <td><input type="text" name="user[email]" class="form-control" value="<?php echo h($user->email); ?>" />
+      <small id="emailHelp" class="form-text text-muted">Email must be of a valid format and less than 128 characters.</small></td>
+  </tr>
+  <tr>
+      <th>Telephone</th>
+      <td><input type="text" name="user[telephone]" class="form-control" value="<?php echo h($user->telephone); ?>" /></td>
+  </tr>
+  <tr>
+      <th>Address 1</th>
+      <td><input type="text" name="user[address1]" class="form-control" value="<?php echo h($user->address1); ?>" /></td>
+  </tr>
+  <tr>
+      <th>Address 2</th>
+      <td><input type="text" name="user[address2]" class="form-control" value="<?php echo h($user->address2); ?>" /></td>
+  </tr>
+  <tr>
+      <th>City</th>
+      <td><input type="text" name="user[city]" class="form-control" value="<?php echo h($user->city); ?>" /></td>
+  </tr>
+  <tr>
+      <th>Post Code</th>
+      <td><input type="text" name="user[postcode]" class="form-control" value="<?php echo h($user->postcode); ?>" /></td>
+  </tr>
+  <tr>
+      <th>Role (Preset to 'Guest')</th>
+      <td><select name="user[roleid]" class="form-control" disabled>
+    <?php foreach(User::ROLE_OPTIONS as $roleid => $role) { ?>
+      <option value="<?php echo $role; ?>" <?php if($user->roleid == $roleid) { echo 'selected'; } ?>><?php echo $role; ?></option>
+    <?php } ?>
+    </select></td>
+  </tr>
+  <tr>
+      <th>Registration Date</th>
+      <td><input type="text" name="user[registrationdate]" class="form-control" value="<?php echo h($user->registrationdate); ?>" disabled/></td>
+  </tr>
+</table>
+
+      <div id="operations">
+      <input class="btn btn-primary" type="submit" value="Register" />
+      </div>
+    </form>
+
+  </div>
+
+</div>
+
+<?php include(SHARED_PATH . '/footer.php'); ?>

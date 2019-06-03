@@ -19,9 +19,9 @@
   // define("WWW_ROOT", '/~kevinskoglund/chain_gang/public');
   // define("WWW_ROOT", '');
   // * Can dynamically find everything in URL up to "/public"
-  $public_end = strpos($_SERVER['SCRIPT_NAME'], '/public') + 7;
-  $doc_root = substr($_SERVER['SCRIPT_NAME'], 0, $public_end);
-  define("WWW_ROOT", $doc_root);
+  //$public_end = strpos($_SERVER['SCRIPT_NAME'], '/public') + 7;
+  //$doc_root = substr($_SERVER['SCRIPT_NAME'], 0, $public_end);
+  define("WWW_ROOT", '/');
 
   require_once('functions.php');
   require_once('status_error_functions.php');
@@ -48,5 +48,7 @@
   spl_autoload_register('my_autoload');
 
   $database = db_connect();
-  User::set_database($database);
+  DatabaseObject::set_database($database);
+
+  $session = new Session;
 ?>

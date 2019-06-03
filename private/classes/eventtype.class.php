@@ -3,46 +3,16 @@
 class EventType extends DatabaseObject {
 
     static protected $table_name = 'eventtype';
-    static protected $db_columns = ['id', 'username', 'password', 'forename', 'surname', 'dateofbirth', 'email', 'telephone', 'address1', 'address2', 'city', 'postcode', 'roleid', 'registrationdate'];
+    static protected $db_columns = ['id', 'name', 'qualifyingtime'];
 
     public $id;
-    public $username;
-    public $password;
-    public $forename;
-    public $surname;
-    public $dateofbirth;
-    public $email;
-    public $telephone;
-    public $address1;
-    public $address2;
-    public $city;
-    public $postcode;
-    public $roleid;
-    public $registrationdate;
-
-    public const ROLE_OPTIONS = [
-        1 => 'Guest',
-        2 => 'Swimmer',
-        3 => 'Parent',
-        4 => 'Coach',
-        5 => 'Admin'
-      ];
+    public $name;
+    public $qualifyingtime;
 
     public function __construct($args=[]) {
-        $this->id = $args['id'] ?? '';
-        $this->username = $args['username'] ?? '';
-        $this->password = $args['password'] ?? '';
-        $this->forename = $args['forename'] ?? '';
-        $this->surname = $args['surname'] ?? '';
-        $this->dateofbirth = $args['dateofbirth'] ?? '';
-        $this->email = $args['email'] ?? '';
-        $this->telephone = $args['telephone'] ?? '';
-        $this->address1 = $args['address1'] ?? '';
-        $this->address2 = $args['address2'] ?? '';
-        $this->city = $args['city'] ?? '';
-        $this->postcode = $args['postcode'] ?? '';
-        $this->roleid = $args['roleid'] ?? 1;
-        $this->registrationdate = $args['registrationdate'] ?? date("Y-m-d");
+        $this->id = $args['id'] ?? 0;
+        $this->name = $args['name'] ?? '';
+        $this->qualifyingtime = $args['qualifyingtime'] ?? 0;
     }
 
 
@@ -56,12 +26,9 @@ class EventType extends DatabaseObject {
     
       protected function validate() {
         $this->errors = [];
-    
-        if(is_blank($this->username)) {
-          $this->errors[] = "Username cannot be blank.";
-        }
-        if(is_blank($this->forename)) {
-          $this->errors[] = "Forename cannot be blank.";
+
+        if(is_blank($this->name)) {
+          $this->errors[] = "Event Name cannot be blank.";
         }
         return $this->errors;
       }

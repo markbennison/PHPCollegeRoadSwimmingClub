@@ -3,7 +3,7 @@
 class Swimmer extends DatabaseObject {
 
     static protected $table_name = 'user';
-    static protected $db_columns = ['id', 'username', 'password', 'forename', 'surname', 'dateofbirth', 'email', 'telephone', 'address1', 'address2', 'city', 'postcode', 'roleid', 'registrationdate'];
+    static protected $db_columns = ['id', 'username', 'password', 'forename', 'surname', 'dateofbirth', 'gender', 'email', 'telephone', 'address1', 'address2', 'city', 'postcode', 'roleid', 'registrationdate'];
 
     public $id;
     public $username;
@@ -11,6 +11,7 @@ class Swimmer extends DatabaseObject {
     public $forename;
     public $surname;
     public $dateofbirth;
+    public $gender;
     public $email;
     public $telephone;
     public $address1;
@@ -20,6 +21,7 @@ class Swimmer extends DatabaseObject {
     public $roleid;
     public $registrationdate;
 
+    public $swimmerid;
     public $parentid;
     public $swimmerconfirmed;
     public $parentconfirmed;
@@ -39,6 +41,7 @@ class Swimmer extends DatabaseObject {
         $this->forename = $args['forename'] ?? '';
         $this->surname = $args['surname'] ?? '';
         $this->dateofbirth = $args['dateofbirth'] ?? date("Y-m-d");
+        $this->gender = $args['gender'] ?? "Female";
         $this->email = $args['email'] ?? '';
         $this->telephone = $args['telephone'] ?? '';
         $this->address1 = $args['address1'] ?? '';
@@ -91,6 +94,13 @@ class Swimmer extends DatabaseObject {
       $sql .= "WHERE roleid='". $roleid . "'";
       return static::find_by_sql($sql);
     }
+
+    static public function find_swimmers_ordered() {
+      $sql = "SELECT * FROM " . static::$table_name . " ";
+      $sql .= "WHERE roleid='2' ";
+      $sql .= "ORDER BY surname ASC, forename ASC, dateofbirth ASC ";
+      return static::find_by_sql($sql);
+    }
 /*
 SELECT 
 `swimmerparent`.`swimmerid`, 
@@ -105,14 +115,21 @@ INNER JOIN `user` ON `swimmerparent`.`parentid` = `user`.`id`
 WHERE `swimmerparent`.`swimmerid` = '' 
 */
 
-    static public function find_swimmer_parents($id) {
-      $sql = "SELECT swimmerparent.swimmerid, swimmerparent.parentid, user.username, user.forename, user.surname, swimmerparent.swimmerconfirmed, swimmerparent.parentconfirmed ";
+    static public function find_swimmer_parents($swimmerid) {
+      $sql = "SELECT swimmerparent.swimmerid, swimmerparent.parentid, user.id, user.username, user.forename, user.surname, user.gender, swimmerparent.swimmerconfirmed, swimmerparent.parentconfirmed ";
       $sql .= "FROM swimmerparent ";
       $sql .= "INNER JOIN user ON swimmerparent.parentid = user.id ";
-      $sql .= "WHERE swimmerparent.swimmerid='" . self::$database->escape_string($id) . "'";
+      $sql .= "WHERE swimmerparent.swimmerid='" . self::$database->escape_string($swimmerid) . "'";
       return static::find_by_sql($sql);
     }
 
+    static public function find_swimmer_children($parentid) {
+      $sql = "SELECT swimmerparent.swimmerid, swimmerparent.parentid, user.id, user.username, user.forename, user.surname, user.gender, swimmerparent.swimmerconfirmed, swimmerparent.parentconfirmed ";
+      $sql .= "FROM swimmerparent ";
+      $sql .= "INNER JOIN user ON swimmerparent.swimmerid = user.id ";
+      $sql .= "WHERE swimmerparent.parentid='" . self::$database->escape_string($parentid) . "'";
+      return static::find_by_sql($sql);
+    }
 
     public function condition() {
         if($this->condition_id > 0) {

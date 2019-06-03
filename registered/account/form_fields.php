@@ -2,7 +2,7 @@
 // prevents this code from being loaded directly in the browser
 // or without first setting the necessary object
 if(!isset($user)) {
-  redirect_to(url_for('admin/user/index.php'));
+  redirect_to('/registered/account/index.php');
 }
 ?>
 
@@ -68,14 +68,14 @@ if(!isset($user)) {
   </tr>
   <tr>
       <th>Role</th>
-      <td><select name="user[roleid]" class="form-control">
+      <td><select name="user[roleid]" class="form-control" disabled>
     <?php foreach(User::ROLE_OPTIONS as $roleid => $role) { ?>
-      <option value="<?php echo $roleid; ?>" <?php if($user->roleid == $roleid) { echo 'selected'; } ?>><?php echo $role; ?></option>
+      <option value="<?php echo $role; ?>" <?php if($user->roleid == $roleid) { echo 'selected'; } ?>><?php echo $role; ?></option>
     <?php } ?>
     </select></td>
   </tr>
   <tr>
       <th>Registration Date</th>
-      <td><input type="text" name="user[registrationdate]" class="form-control" value="<?php echo h($user->registrationdate); ?>" /></td>
+      <td><input type="text" name="user[registrationdate]" class="form-control" value="<?php echo h($user->registrationdate); ?>" disabled /></td>
   </tr>
 </table>

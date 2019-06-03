@@ -1,5 +1,6 @@
 <?php #userdetail.php
-    require_once ($_SERVER['DOCUMENT_ROOT'] . '/private/initialise.php');
+    require_once($_SERVER['DOCUMENT_ROOT'] . '/private/initialise.php');
+    require_login();
 
     $id = $_GET['id'] ?? false;
     if(!$id) {
@@ -13,13 +14,17 @@
 
 <!-- ********** CONTENT AREA ********** -->
 <div class="row">
-    <div class="col text-right">
+    <div class="col-8 text-left">
+        <h3>Personal Details</h3>
+    </div>
+    <div class="col-4 text-right">
         <h3>
-            <a href="index.php" class=""><span class="fas fa-th-list"></span></a>
+            <a href="index.php" class=""><span class="fas fa-th-list btn btn-primary"></span></a>
         </h3>
     </div>
 </div>
 
+<!-- ---START--- Swimmer (User) Details ---START--- -->
 <div class="row">
   <div class="col">
         <table id="formview" class="table table-sm table-borderless">
@@ -65,6 +70,17 @@
         </table>
     </div>
   </div>
+<!-- ----END---- Swimmer (User) Details ----END---- -->
+
+<?php 
+  if ($user->roleid == 2){
+    include('form_parentlist.php'); 
+    include('form_traininglist.php');
+    include('form_competitionlist.php');
+  }else if ($user->roleid == 3){
+    include('form_childlist.php'); 
+  }
+?>
 
 <?php // Include the HTML footer file:
 include ($_SERVER['DOCUMENT_ROOT'] . '/includes/footer.php');

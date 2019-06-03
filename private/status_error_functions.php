@@ -1,5 +1,54 @@
 <?php
 
+function require_login() {
+  global $session;
+  if(!$session->is_logged_in()) {
+    redirect_to('/login.php');
+  }
+}
+
+function require_coach() {
+  global $session;
+  if(!$session->is_logged_in() || $session->roleid < 4) {
+    redirect_to('/index.php');
+  }
+}
+
+function require_admin() {
+  global $session;
+  if(!$session->is_logged_in() || $session->roleid < 5) {
+    redirect_to('/index.php');
+  }
+}
+
+function require_adult() {
+  global $session;
+  if(!$session->is_logged_in() || !$session->is_adult()) {
+    redirect_to('/index.php');
+  }
+}
+
+function css_show_admin() {
+  global $session;
+  if($session->roleid < 5) {
+    echo "d-none";
+  }
+}
+
+function css_show_coach() {
+  global $session;
+  if($session->roleid < 4) {
+    echo "d-none";
+  }
+}
+
+function css_hide_child() {
+  global $session;
+  if(!$session->is_adult()) {
+    echo "d-none";
+  }
+}
+
 function display_errors($errors=array()) {
   $output = '';
   if(!empty($errors)) {

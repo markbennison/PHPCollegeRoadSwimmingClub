@@ -1,15 +1,15 @@
 <?php #userdetail.php
     require_once($_SERVER['DOCUMENT_ROOT'] . '/private/initialise.php');
-    require_admin();
-
-    $id = $_GET['id'] ?? false;
+    $id = $session->user_id;
     if(!$id) {
-        redirect_to('index.php');
+        redirect_to('/index.php');
     }
     $user = User::find_by_id($id);
 
     $page_title = 'User Detail: ' . $user->forename . ' ' . $user->surname;
-    include($_SERVER['DOCUMENT_ROOT'] . '/includes/header.php');
+    include ($_SERVER['DOCUMENT_ROOT'] . '/includes/header.php');
+
+    $session->is_adult();
 ?>
 
 <!-- ********** CONTENT AREA ********** -->
@@ -19,12 +19,12 @@
     </div>
     <div class="col-4 text-right">
         <h3>
-            <a href="index.php" class=""><span class="fas fa-th-list btn btn-primary"></span></a>
+            <a href="/registered/account/edit.php" class="<?php css_hide_child(); ?>"><span class="fas fa-pen btn btn-primary"></span></a>
         </h3>
     </div>
 </div>
 
-#<!-- ---START--- User Details ---START--- -->
+<!-- ---START--- Swimmer (User) Details ---START--- -->
 <div class="row">
   <div class="col">
         <table id="formview" class="table table-sm table-borderless">
@@ -43,10 +43,6 @@
             <tr>
                 <th>Date of Birth</th>
                 <td><?php echo h($user->dateofbirth); ?></td>
-            </tr>
-            <tr>
-                <th>Gender</th>
-                <td><?php echo h($user->gender); ?></td>
             </tr>
             <tr>
                 <th>Email</th>
@@ -74,7 +70,7 @@
         </table>
     </div>
   </div>
-<!-- ----END---- User Details ----END---- -->
+<!-- ----END---- Swimmer (User) Details ----END---- -->
 
 <?php 
   if ($user->roleid == 2){
@@ -86,4 +82,6 @@
   }
 ?>
 
-<?php include($_SERVER['DOCUMENT_ROOT'] . '/includes/footer.php'); ?>
+<?php // Include the HTML footer file:
+include ($_SERVER['DOCUMENT_ROOT'] . '/includes/footer.php');
+?>
